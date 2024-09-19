@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2020", // Choose ECMAScript version
+    "module": "commonjs", // Module system used in Node.js
+    "jsx": "react-jsx", // Enable JSX support for React (or use "react" for older React versions)
+    "strict": true, // Enable all strict type-checking options
+    "esModuleInterop": true, // Allows default imports from modules with no default export
+    "skipLibCheck": true, // Skip type checking of all declaration files
+    "forceConsistentCasingInFileNames": true, // Ensure case consistency in imports
+    "outDir": "./dist", // Output directory for compiled JS files
+    "rootDir": "./src" // Root directory of your source files
+  },
+  "include": ["src/**/*"], // Ensure all files in src are included
+  "exclude": ["node_modules", "dist"] // Exclude node_modules and dist folders
+}
