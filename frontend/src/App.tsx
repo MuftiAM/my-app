@@ -1,14 +1,12 @@
 import React from "react";
-import logo from "./logo.svg";
-import "./App.css";
-import Dashboard from "./components/dashboard";
+import Login from "./components/login"; // Import the login page
 
-const App: React.FC = () => {
+function App() {
   return (
-    <div className="App">
-      <Dashboard /> {/* Render the Dashboard component */}
+    <div>
+      <Login />
     </div>
   );
-};
+}
 
 export default App;

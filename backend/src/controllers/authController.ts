@@ -1,39 +1,71 @@
 import { Request, Response } from "express";
-import { AuthService } from "../services/authService";
-import { User } from "../models/userModel";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { User } from "../models/userModel"; // Assuming you have a User model
 
+// Login function
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   try {
-    // Call the AuthService to authenticate the user
-    const token = await AuthService.login(email, password);
-
-    if (token) {
-      return res.status(200).json({ token });
-    } else {
-      return res.status(401).json({ message: "Invalid credentials" });
+    // Find the user by email
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found" });
     }
+
+    // Compare the password with the stored hash
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid password" });
+    }
+
+    // Create a JWT token
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET || "secret",
+      {
+        expiresIn: "1h",
+      }
+    );
+
+    return res.json({ success: true, token });
   } catch (error) {
-    const err = error as Error; // Explicitly cast error to Error
-    return res
-      .status(500)
-      .json({ message: "Server error", error: err.message });
+    console.error("Login error:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
+// Signup function
 export const signup = async (req: Request, res: Response) => {
-  const { name, email, password } = req.body;
+  const { email, password, name } = req.body;
 
   try {
-    // Call the AuthService to register the user
-    const user = await AuthService.signup({ name, email, password });
+    // Check if user already exists
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User already exists" });
+    }
 
-    return res.status(201).json({ message: "User created", user });
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user
+    const newUser = await User.create({
+      email,
+      password: hashedPassword,
+      name,
+    });
+
+    return res.status(201).json({ success: true, user: newUser });
   } catch (error) {
-    const err = error as Error; // Explicitly cast error to Error
-    return res
-      .status(500)
-      .json({ message: "Server error", error: err.message });
+    console.error("Signup error:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
